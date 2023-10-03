@@ -107,6 +107,7 @@ class StampClassifier(nn.Module):
         x_mean = torch.mean(x_conc, dim=0)
         features = self.normalization(features)
         x_meta = torch.cat((x_mean, features), 1)
+        print(x_mean.shape)
         x_final = self.linears(x_meta)
         return x_final
 
