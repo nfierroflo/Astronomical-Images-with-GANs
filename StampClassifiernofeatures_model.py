@@ -8,6 +8,7 @@ import pickle as pk
 from torch.utils.data import DataLoader
 import os
 from torch.utils.data import Dataset
+import matplotlib.pyplot as plt
 
 #Setear variables de entorno para limitar uso a solo una GPU
 
@@ -83,7 +84,8 @@ class StampClassifier(nn.Module):
         self.normalization = nn.BatchNorm1d(26)
 
         self.linears = nn.Sequential(
-            nn.Linear(90, 64),
+            #nn.Linear(90, 64),
+            nn.Linear(64, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Dropout(p=dropout_p),
@@ -105,10 +107,10 @@ class StampClassifier(nn.Module):
         x3_p = self.features_extractor(x_3)
         x_conc = torch.stack((x0_p, x1_p, x2_p, x3_p), dim=0)
         x_mean = torch.mean(x_conc, dim=0)
-        features = self.normalization(features)
-        x_meta = torch.cat((x_mean, features), 1)
-        print(x_mean.shape)
-        x_final = self.linears(x_meta)
+        #features = self.normalization(features)
+        #x_meta = torch.cat((x_mean, features), 1)
+        #x_final = self.linears(x_meta)
+        x_final = self.linears(x_mean)
         return x_final
 
 #Paso de entrenamiento
@@ -280,3 +282,8 @@ curves = train_model(
     n_evaluations=train_each,
     use_gpu=GPU_use
 )
+
+plt.plot(curves['train_acc'], label='train_acc')
+plt.plot(curves['val_acc'], label='val_acc')
+plt.legend()
+plt.show()
