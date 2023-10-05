@@ -1,7 +1,8 @@
-from torch.utils.data import Dataset
 import numpy as np
+import torch
+from torch.utils.data import Dataset
 
-class StampDataset(Dataset):
+class ImagesDataset(Dataset):
     def __init__(self, images, labels, transform=None,label_as_strings=False,cut_around_center=False):
         # Define a mapping from string classes to numerical labels
 
@@ -17,10 +18,10 @@ class StampDataset(Dataset):
             'bogus': 4
         }
         if label_as_strings:
-            self.labels = np.array([class_to_label[c] for c in labels])
+            self.labels = torch.Tensor([class_to_label[c] for c in labels])
         
         if cut_around_center:
-            self.img = self.img[:, 14:42, 14:42, :]
+            self.img = self.img[:, :, 14:42, 14:42]
 
     def __len__(self):
         return len(self.img)
