@@ -11,11 +11,11 @@ class ImagesDataset(Dataset):
         self.transform = transform
 
         class_to_label = {
-            'AGN': 0,
-            'SN': 1,
-            'VS': 2,
-            'asteroid': 3,
-            'bogus': 4
+            'AGN': 0.0,
+            'SN': 1.0,
+            'VS': 2.0,
+            'asteroid': 3.0,
+            'bogus': 4.0
         }
         if label_as_strings:
             self.labels = torch.Tensor([class_to_label[c] for c in labels])

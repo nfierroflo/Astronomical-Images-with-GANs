@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import os
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
 
 #Setear variables de entorno para limitar uso a solo una GPU
 
@@ -32,17 +33,6 @@ save_dir = 'data/'
 
 #Modelo y clases necesarias para cargar los datos
 
-class StampDataset(Dataset):
-    def __init__(self, images,features,onehot):
-        self.img = images
-        self.features = features
-        self.labels = onehot
-
-    def __len__(self):
-        return len(self.img)
-
-    def __getitem__(self, idx):
-        return self.img[idx,:,:,:], self.features[idx,:],self.labels[idx]
 
 class StampClassifier(nn.Module):
     def __init__(
@@ -137,6 +127,9 @@ def validation_step(val_loader, model, criterion, use_gpu):
     cumulative_predictions = 0
     data_count = 0
 
+    y_true = []  # True class labels
+    y_pred = []  # Predicted class labels
+
     for img_val, y_val in val_loader:
         if use_gpu:
             img_val = img_val.cuda()
@@ -152,9 +145,17 @@ def validation_step(val_loader, model, criterion, use_gpu):
         cumulative_loss += loss.item()
         data_count += y_val.shape[0]
 
+        # Append true and predicted labels for later evaluation
+        y_true.extend(y_val.cpu().numpy())
+        y_pred.extend(class_prediction.cpu().numpy())
+    print(y_true)
+    print(y_pred)
     val_acc = cumulative_predictions / data_count
     val_loss = cumulative_loss / len(val_loader)
 
+    # Calculate classification report for each class
+    class_report = classification_report(y_true, y_pred)
+    print(class_report)
     return val_acc, val_loss
 
 
@@ -245,7 +246,7 @@ def train_model(
 
 
 
-def trainer(train_loader,val_loader,batch_size=64,epochs=30):
+def trainer(train_loader,val_loader,batch_size=32,epochs=30):
     #Instancia del modelo
     model = StampClassifier(dropout_p)
 
