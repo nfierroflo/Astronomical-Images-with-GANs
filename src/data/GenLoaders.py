@@ -32,7 +32,7 @@ def get_SNsLoader(save_dir,batch_size=32,file_name="stamp_dataset_21_new.pkl"):
     dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     return dataloader 
 
-def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset_21_new.pkl",synthetic_SN=torch.tensor([]),label_as_strings=False):
+def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset_21_new.pkl",synthetic_SN=torch.tensor([]),label_as_strings=False,with_labels=False):
     #Carga de datos
     with open(save_dir + file_name, "rb") as f:
         data = pk.load(f)
@@ -45,9 +45,14 @@ def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset
     train_images = Train_dict['images']
     validation_images = Validation_dict['images']
 
-    #Labels
     labels_train = Train_dict['class']
     labels_val = Validation_dict['class']
+
+    #numerical labels
+    if with_labels:
+        labels_train = Train_dict['labels']
+        labels_val = Validation_dict['labels']
+
 
     #Convert the NumPy array to a PyTorch tensor
     train_images_tensor = torch.tensor(train_images.transpose(0, 3, 1, 2), dtype=torch.float32)
@@ -68,8 +73,8 @@ def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset
             labels_train = torch.cat((torch.Tensor(labels_train),torch.ones(synthetic_SN.shape[0])),dim=0)
         
 
-    train_dataset = ImagesDataset(train_images_resize,labels_train,label_as_strings=True)
-    validation_dataset = ImagesDataset(validation_images_resize,labels_val,label_as_strings=True)
+    train_dataset = ImagesDataset(train_images_resize,labels_train,label_as_strings=label_as_strings)
+    validation_dataset = ImagesDataset(validation_images_resize,labels_val,label_as_strings=label_as_strings)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader= DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
