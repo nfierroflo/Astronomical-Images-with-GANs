@@ -126,7 +126,7 @@ def train_step(x_images, y_batch, model, optimizer, criterion):
 
 #Paso de validacion
 
-def validation_step(val_loader, model, criterion, use_gpu,last=False):
+def validation_step(val_loader, model, criterion, use_gpu,best=False):
     cumulative_loss = 0
     cumulative_predictions = 0
     data_count = 0
@@ -156,7 +156,7 @@ def validation_step(val_loader, model, criterion, use_gpu,last=False):
     val_acc = cumulative_predictions / data_count
     val_loss = cumulative_loss / len(val_loader)
 
-    if last:
+    if best:
         
         # Compute the confusion matrix
         confusion = confusion_matrix(y_true, y_pred)
@@ -203,7 +203,7 @@ def train_model(
     t0 = time.perf_counter()
 
     iteration = 0
-
+    best_val_acc = 0.5
     for epoch in range(epochs):
         print(f"\rEpoch {epoch + 1}/{epochs}")
         cumulative_train_loss = 0
@@ -239,8 +239,13 @@ def train_model(
         model.eval()
         with torch.no_grad():
             val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu)
-            if epoch == epochs-1:
-                val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu,last=True)
+                
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_val_loss = val_loss
+                best_epoch = epoch
+                val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu,best=True)
+                torch.save(model.state_dict(), f'best_model_epoch{epoch}_{time.time()}.pt')
 
         print(f"Val loss: {val_loss}, Val acc: {val_acc}")
 
@@ -253,6 +258,7 @@ def train_model(
         curves["val_loss"].append(val_loss)
 
     print(f"Tiempo total de entrenamiento: {time.perf_counter() - t0:.4f} [s]")
+    print(f"Best Val loss: {val_loss}, Best Val acc: {best_val_loss}")
 
     model.cpu()
 
