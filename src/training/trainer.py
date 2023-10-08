@@ -10,6 +10,10 @@ import os
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 #Setear variables de entorno para limitar uso a solo una GPU
 
@@ -122,7 +126,7 @@ def train_step(x_images, y_batch, model, optimizer, criterion):
 
 #Paso de validacion
 
-def validation_step(val_loader, model, criterion, use_gpu):
+def validation_step(val_loader, model, criterion, use_gpu,last=False):
     cumulative_loss = 0
     cumulative_predictions = 0
     data_count = 0
@@ -148,14 +152,23 @@ def validation_step(val_loader, model, criterion, use_gpu):
         # Append true and predicted labels for later evaluation
         y_true.extend(y_val.cpu().numpy())
         y_pred.extend(class_prediction.cpu().numpy())
-    print(y_true)
-    print(y_pred)
+
     val_acc = cumulative_predictions / data_count
     val_loss = cumulative_loss / len(val_loader)
 
-    # Calculate classification report for each class
-    class_report = classification_report(y_true, y_pred)
-    print(class_report)
+    if last:
+        
+        # Compute the confusion matrix
+        confusion = confusion_matrix(y_true, y_pred)
+
+        # Display the confusion matrix using seaborn and matplotlib
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(confusion, annot=True, fmt='d', cmap='Blues')
+        plt.xlabel('Predicted Labels')
+        plt.ylabel('True Labels')
+        plt.title('Confusion Matrix')
+        plt.show()
+
     return val_acc, val_loss
 
 
@@ -219,13 +232,15 @@ def train_model(
                 train_loss = cumulative_train_loss / train_loss_count
                 train_acc = cumulative_train_corrects / train_acc_count
 
-                print(f"Iteration {iteration} - Batch {i}/{len(train_loader)} - Train loss: {train_loss}, Train acc: {train_acc}")
+                #print(f"Iteration {iteration} - Batch {i}/{len(train_loader)} - Train loss: {train_loss}, Train acc: {train_acc}")
 
             iteration += 1
 
         model.eval()
         with torch.no_grad():
             val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu)
+            if epoch == epochs-1:
+                val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu,last=True)
 
         print(f"Val loss: {val_loss}, Val acc: {val_acc}")
 
