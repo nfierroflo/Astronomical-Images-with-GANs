@@ -182,7 +182,8 @@ def train_model(
     batch_size,
     lr,
     n_evaluations=train_each,
-    use_gpu=False
+    use_gpu=False,
+    save_models="",
 ):
 
     if use_gpu:
@@ -203,7 +204,7 @@ def train_model(
     t0 = time.perf_counter()
 
     iteration = 0
-    best_val_acc = 0.5
+    best_val_acc = 0.75
     for epoch in range(epochs):
         print(f"\rEpoch {epoch + 1}/{epochs}")
         cumulative_train_loss = 0
@@ -245,7 +246,7 @@ def train_model(
                 best_val_loss = val_loss
                 best_epoch = epoch
                 val_acc, val_loss = validation_step(val_loader, model, criterion, use_gpu,best=True)
-                torch.save(model.state_dict(), f'best_model_epoch{epoch}_{time.time()}.pt')
+                torch.save(model.state_dict(), f'saved_models/{save_models}/best_model_epoch{epoch}_{time.time()}.pt')
 
         print(f"Val loss: {val_loss}, Val acc: {val_acc}")
 
@@ -267,7 +268,7 @@ def train_model(
 
 
 
-def trainer(train_loader,val_loader,batch_size=32,epochs=30):
+def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
     #Instancia del modelo
     model = StampClassifier(dropout_p)
 
@@ -282,6 +283,7 @@ def trainer(train_loader,val_loader,batch_size=32,epochs=30):
         lr,
         n_evaluations=train_each,
         use_gpu=GPU_use
+        save_models=dir_name
     )
 
     plt.plot(curves['train_acc'], label='train_acc')
