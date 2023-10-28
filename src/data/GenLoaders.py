@@ -44,12 +44,12 @@ def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset
     #Images
     train_images = Train_dict['images']
     validation_images = Validation_dict['images']
+    
+    try:
+        labels_train = Train_dict['class']
+        labels_val = Validation_dict['class']
 
-    labels_train = Train_dict['class']
-    labels_val = Validation_dict['class']
-
-    #numerical labels
-    if with_labels:
+    except:
         labels_train = Train_dict['labels']
         labels_val = Validation_dict['labels']
 
@@ -78,6 +78,35 @@ def get_training_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader= DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
+
+
+    return train_loader, val_loader
+
+def get_binary_loaders(save_dir='data/',batch_size=32,file_name="stamp_dataset_21_new.pkl",synthetic_SN=torch.tensor([]),label_as_strings=False,with_labels=False):
+        #Carga de datos
+    with open(save_dir + file_name, "rb") as f:
+        data = pk.load(f)
+
+    #Separacion de los datos
+    Train_dict = data['Train']
+    Validation_dict = data['Validation']
+    Test_dict = data['Test']
+
+    #Images
+    train_images = Train_dict['images']
+    validation_images = Validation_dict['images']
+    test_images = Test_dict['images']
+
+    try:
+        labels_train = Train_dict['class']
+        labels_val = Validation_dict['class']
+        labels_test = Test_dict['class']
+
+    except:
+        labels_train = Train_dict['labels']
+        labels_val = Validation_dict['labels']
+        labels_test = Test_dict['labels']
+
 
 
     return train_loader, val_loader

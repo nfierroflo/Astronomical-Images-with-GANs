@@ -292,3 +292,10 @@ def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
     plt.show()
 
     return curves
+
+def tester(test_loader,model,use_gpu=False):
+    model.eval()
+    with torch.no_grad():
+        test_acc, test_loss = validation_step(test_loader, model, criterion, use_gpu)
+        print(f"Test loss: {test_loss}, Test acc: {test_acc}")
+        return test_acc, test_loss
