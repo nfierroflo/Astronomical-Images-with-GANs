@@ -259,7 +259,7 @@ def train_model(
         curves["val_loss"].append(val_loss)
 
     print(f"Tiempo total de entrenamiento: {time.perf_counter() - t0:.4f} [s]")
-    print(f"Best Val loss: {val_loss}, Best Val acc: {best_val_loss}")
+    print(f"Best Val loss: {best_val_loss}, Best Val acc: {best_val_acc} in epoch {best_epoch}")
 
     model.cpu()
 
@@ -282,7 +282,7 @@ def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
         batch_size,
         lr,
         n_evaluations=train_each,
-        use_gpu=GPU_use
+        use_gpu=GPU_use,
         save_models=dir_name
     )
 
