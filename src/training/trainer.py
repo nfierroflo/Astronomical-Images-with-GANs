@@ -259,7 +259,7 @@ def train_model(
         curves["val_loss"].append(val_loss)
 
     print(f"Tiempo total de entrenamiento: {time.perf_counter() - t0:.4f} [s]")
-    print(f"Best Val loss: {best_val_loss}, Best Val acc: {best_val_acc} in epoch {best_epoch}")
+    print(f"Best Val loss: {val_loss}, Best Val acc: {best_val_loss}")
 
     model.cpu()
 
