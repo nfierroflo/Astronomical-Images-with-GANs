@@ -27,7 +27,7 @@ GPU_use = True
 train_each = 100
 
 #Directorio donde se encuentra el dataset
-save_dir = 'C:/Users/nfier/Documents/Magister/cursos/EL7006 Redes Neuronales y Teoría de Información para el Aprendizaje/proyecto/'
+save_dir = 'data/'
 
 #Modelo y clases necesarias para cargar los datos
 
