@@ -34,11 +34,19 @@ def data_converter(save_dir='data/', file_name="stamp_dataset_21_new.pkl" , labe
             'asteroid': 3.0,
             'bogus': 4.0
         }
+    
     if label_as_strings:
             labels_train = [class_to_label[c] for c in labels_train]
             labels_val = [class_to_label[c] for c in labels_val]
             labels_test = [class_to_label[c] for c in labels_test]
     
+    train_images=train_images[(labels_train!=3)&(labels_train!=4)]
+    labels_train=labels_train[(labels_train!=3)&(labels_train!=4)]
+    validation_images=validation_images[(labels_val!=3)&(labels_val!=4)]
+    labels_val=labels_val[(labels_val!=3)&(labels_val!=4)]
+    test_images=test_images[(labels_test!=3)&(labels_test!=4)]
+    labels_test=labels_test[(labels_test!=3)&(labels_test!=4)]
+
     #save the new pickle file
     new_data = {'Train': {'images': train_images, 'labels': labels_train},
                 'Validation': {'images': validation_images, 'labels': labels_val},

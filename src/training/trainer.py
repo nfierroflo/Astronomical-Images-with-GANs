@@ -126,7 +126,7 @@ def train_step(x_images, y_batch, model, optimizer, criterion):
 
 #Paso de validacion
 
-def validation_step(val_loader, model, criterion, use_gpu,best=False):
+def validation_step(val_loader, model, criterion, use_gpu,best=False,test=False):
     cumulative_loss = 0
     cumulative_predictions = 0
     data_count = 0
@@ -137,11 +137,11 @@ def validation_step(val_loader, model, criterion, use_gpu,best=False):
     for img_val, y_val in val_loader:
         if use_gpu:
             img_val = img_val.cuda()
-            y_val = y_val.cuda().long()
+            y_val = y_val.cuda()
 
         y_predicted = model(img_val.float())
 
-        loss = criterion(y_predicted, y_val)
+        loss = criterion(y_predicted, y_val.long())
 
         class_prediction = torch.argmax(y_predicted, axis=1).long()
 
@@ -156,7 +156,7 @@ def validation_step(val_loader, model, criterion, use_gpu,best=False):
     val_acc = cumulative_predictions / data_count
     val_loss = cumulative_loss / len(val_loader)
 
-    if best:
+    if best or test:
         
         # Compute the confusion matrix
         confusion = confusion_matrix(y_true, y_pred)
@@ -204,7 +204,8 @@ def train_model(
     t0 = time.perf_counter()
 
     iteration = 0
-    best_val_acc = 0.75
+    best_val_acc = 0
+    best_val_loss = 100
     for epoch in range(epochs):
         print(f"\rEpoch {epoch + 1}/{epochs}")
         cumulative_train_loss = 0
@@ -259,7 +260,7 @@ def train_model(
         curves["val_loss"].append(val_loss)
 
     print(f"Tiempo total de entrenamiento: {time.perf_counter() - t0:.4f} [s]")
-    print(f"Best Val loss: {val_loss}, Best Val acc: {best_val_loss}")
+    print(f"Best Val loss: {best_val_loss}, Best Val acc: {best_val_acc}")
 
     model.cpu()
 
@@ -291,11 +292,13 @@ def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
     plt.legend()
     plt.show()
 
-    return curves
+    return curves,model
 
 def tester(test_loader,model,use_gpu=False):
     model.eval()
     with torch.no_grad():
-        test_acc, test_loss = validation_step(test_loader, model, criterion, use_gpu)
+        test_acc, test_loss = validation_step(test_loader, model, criterion, use_gpu,test=True)
         print(f"Test loss: {test_loss}, Test acc: {test_acc}")
+        
+
         return test_acc, test_loss
