@@ -156,18 +156,12 @@ def validation_step(val_loader, model, criterion, use_gpu,best=False,test=False)
     val_acc = cumulative_predictions / data_count
     val_loss = cumulative_loss / len(val_loader)
 
-    if best or test:
+    if test:
         
         # Compute the confusion matrix
         confusion = confusion_matrix(y_true, y_pred)
 
-        # Display the confusion matrix using seaborn and matplotlib
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(confusion, annot=True, fmt='d', cmap='Blues')
-        plt.xlabel('Predicted Labels')
-        plt.ylabel('True Labels')
-        plt.title('Confusion Matrix')
-        plt.show()
+        return val_acc, val_loss, confusion
 
     return val_acc, val_loss
 
@@ -269,7 +263,7 @@ def train_model(
 
 
 
-def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
+def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name="",result_name="",learning_rate=lr):
     #Instancia del modelo
     model = StampClassifier(dropout_p)
 
@@ -281,24 +275,44 @@ def trainer(train_loader,val_loader,batch_size=32,epochs=30,dir_name=""):
         epochs,
         criterion,
         batch_size,
-        lr,
+        lr=learning_rate,
         n_evaluations=train_each,
         use_gpu=GPU_use,
-        save_models=dir_name
+        save_models=dir_name,
     )
 
     plt.plot(curves['train_acc'], label='train_acc')
     plt.plot(curves['val_acc'], label='val_acc')
     plt.legend()
+    plt.savefig(f"{result_name}_acc.png")
     plt.show()
+    
+
+    plt.plot(curves['train_loss'], label='train_loss')
+    plt.plot(curves['val_loss'], label='val_loss')
+    plt.legend()
+    plt.savefig(f"{result_name}_loss.png")
+    plt.show()
+    
 
     return curves,model
 
-def tester(test_loader,model,use_gpu=False):
+def tester(test_loader,model,use_gpu=False,dir_name="",result_name=""):
+    
     model.eval()
     with torch.no_grad():
-        test_acc, test_loss = validation_step(test_loader, model, criterion, use_gpu,test=True)
+        test_acc, test_loss,confusion= validation_step(test_loader, model, criterion, use_gpu,test=True)
         print(f"Test loss: {test_loss}, Test acc: {test_acc}")
         
+        # Display the confusion matrix using seaborn and matplotlib
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(confusion, annot=True, fmt='d', cmap='Blues')
+        plt.xlabel('Predicted Labels')
+        plt.ylabel('True Labels')
+        plt.title('Confusion Matrix')
+        plt.savefig(f"{result_name}_confusion.png")
 
+        plt.show()
+
+        
         return test_acc, test_loss

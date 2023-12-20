@@ -18,6 +18,7 @@ class ImagesDataset(Dataset):
             'bogus': 4.0
         }
         if label_as_strings:
+            print(labels)
             self.labels = torch.Tensor([class_to_label[c] for c in labels])
         
         if cut_around_center:
